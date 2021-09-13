@@ -118,10 +118,11 @@ public class StudentService {
     @Transactional
     public StudentDTO deleteStudent(StudentDTO studentDTO) {
 
-        Student foundStudent = studentRepository.findStudentByFirstNameAndLastNameAndAddressAndGender(studentDTO.getFirstName(),
+        Student foundStudent = studentRepository.findStudentByFirstNameAndLastNameAndAddressAndGenderAndBirthDate(studentDTO.getFirstName(),
                 studentDTO.getLastName(),
                 studentDTO.getAddress(),
-                studentDTO.getGender()).orElseThrow(() -> new EntityNotFoundException("Student can not be found!"));
+                studentDTO.getGender(),
+                studentDTO.getBirthDate()).orElseThrow(() -> new EntityNotFoundException("Student can not be found!"));
 
         StudentDTO result = studentMapper.mapFromStudentToStudentDTO(foundStudent);
         studentRepository.delete(foundStudent);
