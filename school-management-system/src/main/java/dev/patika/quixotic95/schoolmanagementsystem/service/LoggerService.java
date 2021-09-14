@@ -1,8 +1,10 @@
 package dev.patika.quixotic95.schoolmanagementsystem.service;
 
 import dev.patika.quixotic95.schoolmanagementsystem.dto.ExceptionLoggerDTO;
+import dev.patika.quixotic95.schoolmanagementsystem.dto.SalaryUpdateLoggerDTO;
 import dev.patika.quixotic95.schoolmanagementsystem.mapper.ExceptionLoggerMapper;
-import dev.patika.quixotic95.schoolmanagementsystem.repository.ExceptionLoggerRepository;
+import dev.patika.quixotic95.schoolmanagementsystem.mapper.SalaryUpdateLoggerMapper;
+import dev.patika.quixotic95.schoolmanagementsystem.repository.GenericLoggerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +21,11 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class ExceptionLoggerService {
+public class LoggerService {
 
-    private final ExceptionLoggerRepository exceptionLoggerRepository;
+    private final GenericLoggerRepository<?> genericLoggerRepository;
     private final ExceptionLoggerMapper exceptionLoggerMapper;
+    private final SalaryUpdateLoggerMapper salaryUpdateLoggerMapper;
 
     /**
      * checks if date is sent or not
@@ -43,19 +46,38 @@ public class ExceptionLoggerService {
 
         if (!(date == null)) {
             LocalDate parsedDate = LocalDate.parse(date);
-            return exceptionLoggerRepository.findByStatusCodeContainingAndTimestampBetween(type, parsedDate.atStartOfDay(), parsedDate.plusDays(1).atStartOfDay())
+            return genericLoggerRepository.findExceptionLoggerByStatusCodeContainingAndTimestampBetween(type, parsedDate.atStartOfDay(), parsedDate.plusDays(1).atStartOfDay())
                     .orElseThrow(() -> new EntityNotFoundException("Found no exception log on database like this."))
                     .stream()
                     .map(exceptionLoggerMapper::toDto)
                     .collect(Collectors.toList());
         } else {
-            return exceptionLoggerRepository.findByStatusCodeContaining(type)
+            return genericLoggerRepository.findExceptionLoggerByStatusCodeContaining(type)
                     .orElseThrow(() -> new EntityNotFoundException("Found no exception log on database like this.")).stream()
                     .map(exceptionLoggerMapper::toDto)
                     .collect(Collectors.toList());
 
         }
 
+
+    }
+
+    public List<SalaryUpdateLoggerDTO> findByInstructorIdAndOrDate(long instructorId, String date) {
+
+        if (!(date == null)) {
+            LocalDate parsedDate = LocalDate.parse(date);
+            return genericLoggerRepository.findSalaryUpdateLoggerByInstructorIdAndTimestampBetween(instructorId, parsedDate.atStartOfDay(), parsedDate.plusDays(1).atStartOfDay())
+                    .orElseThrow(() -> new EntityNotFoundException("Found no salary update log on database like this."))
+                    .stream()
+                    .map(salaryUpdateLoggerMapper::toDto)
+                    .collect(Collectors.toList());
+        } else {
+            return genericLoggerRepository.findSalaryUpdateLoggerByInstructorId(instructorId)
+                    .orElseThrow(() -> new EntityNotFoundException("Found no salary update log on database like this."))
+                    .stream()
+                    .map(salaryUpdateLoggerMapper::toDto)
+                    .collect(Collectors.toList());
+        }
 
     }
 }
