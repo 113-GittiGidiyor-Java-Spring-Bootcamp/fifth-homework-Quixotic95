@@ -2,26 +2,27 @@ package dev.patika.quixotic95.schoolmanagementsystem.service;
 
 import dev.patika.quixotic95.schoolmanagementsystem.dto.CourseDTO;
 import dev.patika.quixotic95.schoolmanagementsystem.entity.Course;
+import dev.patika.quixotic95.schoolmanagementsystem.exception.CourseIsAlreadyExistException;
+import dev.patika.quixotic95.schoolmanagementsystem.exception.StudentNumberForOneCourseExceededException;
 import dev.patika.quixotic95.schoolmanagementsystem.mapper.CourseMapper;
 import dev.patika.quixotic95.schoolmanagementsystem.repository.CourseRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -105,13 +106,35 @@ class CourseServiceTest {
         when(mockCourseRepository.save(any())).thenReturn(exampleCourse);
         CourseDTO expected = mockCourseMapper.mapFromCourseToCourseDTO(exampleCourse);
 
-        exampleCourseDTO.setStudentIds(Arrays.asList());
+        exampleCourseDTO.setStudentIds(Collections.emptyList());
         CourseDTO actual = courseService.saveCourse(exampleCourseDTO);
 
         assertAll(
                 () -> assertNotNull(actual),
                 () -> assertEquals(expected, actual)
         );
+
+    }
+
+    @Test
+    void should_throw_CourseIsAlreadyExistException_when_saveCourse_called_if_a_Course_already_exists_in_database_with_Same_courseCode() {
+
+        Optional<Course> optionalCourse = Optional.of(exampleCourse);
+        when(mockCourseRepository.findCourseByCourseCodeAndIdIsNot(anyString(), anyLong())).thenReturn(optionalCourse);
+
+        exampleCourseDTO.setStudentIds(Collections.emptyList());
+        exampleCourseDTO.setCourseCode("TEST101");
+
+        assertThrows(CourseIsAlreadyExistException.class, () -> courseService.saveCourse(exampleCourseDTO));
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("studentIdProvider")
+    void should_throw_StudentNumberForOneCourseExceededException_when_saveCourse_called_if_a_Course_has_more_than_20_students(List<Long> givenIdList) {
+
+        exampleCourseDTO.setStudentIds(givenIdList);
+        assertThrows(StudentNumberForOneCourseExceededException.class, () -> courseService.saveCourse(exampleCourseDTO));
 
     }
 
@@ -127,13 +150,33 @@ class CourseServiceTest {
         when(mockCourseRepository.save(any())).thenReturn(exampleCourse);
         CourseDTO expected = mockCourseMapper.mapFromCourseToCourseDTO(exampleCourse);
 
-        exampleCourseDTO.setStudentIds(Arrays.asList());
+        exampleCourseDTO.setStudentIds(Collections.emptyList());
         CourseDTO actual = courseService.updateCourse(exampleCourseDTO, anyLong());
 
         assertAll(
                 () -> assertNotNull(actual),
                 () -> assertEquals(expected, actual)
         );
+
+    }
+
+    @Test
+    void should_return_CourseDTO_when_deleteCourse_called() {
+
+        when(mockCourseMapper.mapFromCourseToCourseDTO(any())).thenReturn(exampleCourseDTO);
+
+        Optional<Course> optionalCourse = Optional.of(exampleCourse);
+        when(mockCourseRepository.findCourseByCourseCode(any())).thenReturn(optionalCourse);
+
+        CourseDTO expected = mockCourseMapper.mapFromCourseToCourseDTO(exampleCourse);
+
+        CourseDTO actual = courseService.deleteCourse(exampleCourseDTO);
+
+        assertAll(
+                () -> assertNotNull(actual),
+                () -> assertEquals(expected, actual)
+        );
+
     }
 
     @Test
@@ -153,5 +196,16 @@ class CourseServiceTest {
                 () -> assertEquals(expected, actual)
         );
 
+    }
+
+    static Stream<List<Long>> studentIdProvider() {
+
+        List<Long> studentIds = new ArrayList<>();
+        long minimum = 21;
+
+        for (long i = 1; i <= minimum; i++) {
+            studentIds.add(i);
+        }
+        return Stream.of(studentIds);
     }
 }
