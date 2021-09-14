@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -229,6 +230,72 @@ public class InstructorService {
     }
 
     /**
+     * checks if percentage makes salary 0 or less.
+     * <p>
+     * checks if Instructor exists in database and Instructor type is true.
+     * <p>
+     * gets current salary of PermanentInstructor
+     * updates the salary in percent
+     * sets the updated salary to PermanentInstructor
+     *
+     * @param instructorId - ID of the will updated PermanentInstructor
+     * @param percentage   - percentage of change
+     * @return PermanentInstructorDTO - updated PermanentInstructorDTO mapped from PermanentInstructor
+     */
+    @Transactional
+    public PermanentInstructorDTO updatePermanentInstructorSalary(long instructorId, double percentage) {
+
+        if (percentage < -99.9) {
+            throw new RuntimeException("Salary cannot be equal or less than 0!");
+        }
+
+        PermanentInstructor permanentInstructor = (PermanentInstructor) instructorRepository.findById(instructorId)
+                .orElseThrow(() -> new EntityNotFoundException("Instructor with id: " + instructorId + " can not be found!"));
+
+        double currentSalary = permanentInstructor.getFixedSalary();
+
+        double updatedSalary = Double.parseDouble(new DecimalFormat("##.##").format((currentSalary * (100 + percentage)) / 100).replace(",", "."));
+
+        permanentInstructor.setFixedSalary(updatedSalary);
+
+        return instructorMapper.mapFromPermanentInstructorToPermanentInstructorDTO(instructorRepository.save(permanentInstructor));
+
+    }
+
+    /**
+     * checks if percentage makes salary 0 or less.
+     * <p>
+     * checks if Instructor exists in database and Instructor type is true.
+     * <p>
+     * gets current salary of VisitingResearcher
+     * updates the salary in percent
+     * sets the updated salary to VisitingResearcher
+     *
+     * @param instructorId - ID of the will updated VisitingResearcher
+     * @param percentage   - percentage of change
+     * @return VisitingResearcherDTO - updated VisitingResearcherDTO mapped from VisitingResearcher
+     */
+    @Transactional
+    public VisitingResearcherDTO updateVisitingResearcherSalary(long instructorId, double percentage) {
+
+        if (percentage < -99.9) {
+            throw new RuntimeException("Salary cannot be equal or less than 0!");
+        }
+
+        VisitingResearcher visitingResearcher = (VisitingResearcher) instructorRepository.findById(instructorId)
+                .orElseThrow(() -> new EntityNotFoundException("Instructor with id: " + instructorId + " can not be found!"));
+
+        double currentSalary = visitingResearcher.getHourlySalary();
+
+        double updatedSalary = Double.parseDouble(new DecimalFormat("##.##").format((currentSalary * (100 + percentage)) / 100).replace(",", "."));
+
+        visitingResearcher.setHourlySalary(updatedSalary);
+
+        return instructorMapper.mapFromVisitingResearcherToVisitingResearcherDTO(instructorRepository.save(visitingResearcher));
+
+    }
+
+    /**
      * helper method for mapping CourseDTO's instructorId to Course's Instructor object
      * gets the Instructor of given id
      *
@@ -254,4 +321,6 @@ public class InstructorService {
             throw new InstructorIsAlreadyExistException("An instructor with this phone number already exists!");
         }
     }
+
+
 }

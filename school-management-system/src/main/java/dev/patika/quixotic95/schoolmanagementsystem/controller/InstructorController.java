@@ -80,6 +80,18 @@ public class InstructorController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @PutMapping("/instructors/permanentInstructor/updateSalary/{instructorId}")
+    public ResponseEntity<?> updatePermanentInstructorSalary(@PathVariable long instructorId, @RequestParam("percentage") double percentage) {
+        PermanentInstructorDTO result = instructorService.updatePermanentInstructorSalary(instructorId, percentage);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PutMapping("/instructors/visitingResearcher/updateSalary/{instructorId}")
+    public ResponseEntity<?> updateVisitingResearcherSalary(@PathVariable long instructorId, @RequestParam("percentage") double percentage) {
+        VisitingResearcherDTO result = instructorService.updateVisitingResearcherSalary(instructorId, percentage);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     // mapping for DELETE /instructors/{instructorId} - delete instructor by id
     @DeleteMapping("/instructors/{instructorId}")
     public ResponseEntity<?> deleteInstructorById(@PathVariable long instructorId) {
