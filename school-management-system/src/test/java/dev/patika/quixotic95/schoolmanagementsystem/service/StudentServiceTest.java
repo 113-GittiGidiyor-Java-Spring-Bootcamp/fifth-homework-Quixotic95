@@ -144,6 +144,7 @@ class StudentServiceTest {
                 () -> assertNotNull(actual),
                 () -> assertEquals(expected, actual)
         );
+
     }
 
     @ParameterizedTest
