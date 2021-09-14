@@ -1,7 +1,7 @@
 package dev.patika.quixotic95.schoolmanagementsystem.exception;
 
 import dev.patika.quixotic95.schoolmanagementsystem.dto.ExceptionLoggerDTO;
-import dev.patika.quixotic95.schoolmanagementsystem.entity.ExceptionLogger;
+import dev.patika.quixotic95.schoolmanagementsystem.entity.logger.ExceptionLogger;
 import dev.patika.quixotic95.schoolmanagementsystem.mapper.ExceptionLoggerMapper;
 import dev.patika.quixotic95.schoolmanagementsystem.repository.ExceptionLoggerRepository;
 import org.springframework.beans.factory.annotation.Autowired;

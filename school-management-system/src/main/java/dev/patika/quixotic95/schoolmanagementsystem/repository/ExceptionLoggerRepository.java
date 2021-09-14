@@ -1,6 +1,6 @@
 package dev.patika.quixotic95.schoolmanagementsystem.repository;
 
-import dev.patika.quixotic95.schoolmanagementsystem.entity.ExceptionLogger;
+import dev.patika.quixotic95.schoolmanagementsystem.entity.logger.ExceptionLogger;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
