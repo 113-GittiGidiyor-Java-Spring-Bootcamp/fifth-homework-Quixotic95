@@ -6,8 +6,11 @@ import dev.patika.quixotic95.schoolmanagementsystem.dto.VisitingResearcherDTO;
 import dev.patika.quixotic95.schoolmanagementsystem.entity.Instructor;
 import dev.patika.quixotic95.schoolmanagementsystem.entity.PermanentInstructor;
 import dev.patika.quixotic95.schoolmanagementsystem.entity.VisitingResearcher;
+import dev.patika.quixotic95.schoolmanagementsystem.entity.logger.ClientInfo;
+import dev.patika.quixotic95.schoolmanagementsystem.entity.logger.SalaryUpdateLogger;
 import dev.patika.quixotic95.schoolmanagementsystem.exception.InstructorIsAlreadyExistException;
 import dev.patika.quixotic95.schoolmanagementsystem.mapper.InstructorMapper;
+import dev.patika.quixotic95.schoolmanagementsystem.repository.GenericLoggerRepository;
 import dev.patika.quixotic95.schoolmanagementsystem.repository.InstructorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,8 @@ public class InstructorService {
 
     private final InstructorRepository<?> instructorRepository;
     private final InstructorMapper instructorMapper;
+    private final GenericLoggerRepository<?> genericLoggerRepository;
+    private final ClientInfo clientInfo;
 
     /**
      * calls findAll() method from repository
@@ -257,6 +262,15 @@ public class InstructorService {
         double updatedSalary = Double.parseDouble(new DecimalFormat("##.##").format((currentSalary * (100 + percentage)) / 100).replace(",", "."));
 
         permanentInstructor.setFixedSalary(updatedSalary);
+        SalaryUpdateLogger salaryUpdateLog = new SalaryUpdateLogger();
+        salaryUpdateLog.setInstructorId(instructorId);
+        salaryUpdateLog.setSalaryBeforeUpdate(currentSalary);
+        salaryUpdateLog.setSalaryAfterUpdate(updatedSalary);
+        salaryUpdateLog.setUpdatePercentage(percentage);
+        salaryUpdateLog.setClientIpAddress(clientInfo.getClientIpAddress());
+        salaryUpdateLog.setClientRequestUrl(clientInfo.getClientRequestUrl());
+        salaryUpdateLog.setClientSessionId(clientInfo.getClientSessionId());
+        genericLoggerRepository.save(salaryUpdateLog);
 
         return instructorMapper.mapFromPermanentInstructorToPermanentInstructorDTO(instructorRepository.save(permanentInstructor));
 
@@ -290,6 +304,16 @@ public class InstructorService {
         double updatedSalary = Double.parseDouble(new DecimalFormat("##.##").format((currentSalary * (100 + percentage)) / 100).replace(",", "."));
 
         visitingResearcher.setHourlySalary(updatedSalary);
+
+        SalaryUpdateLogger salaryUpdateLog = new SalaryUpdateLogger();
+        salaryUpdateLog.setInstructorId(instructorId);
+        salaryUpdateLog.setSalaryBeforeUpdate(currentSalary);
+        salaryUpdateLog.setSalaryAfterUpdate(updatedSalary);
+        salaryUpdateLog.setUpdatePercentage(percentage);
+        salaryUpdateLog.setClientIpAddress(clientInfo.getClientIpAddress());
+        salaryUpdateLog.setClientRequestUrl(clientInfo.getClientRequestUrl());
+        salaryUpdateLog.setClientSessionId(clientInfo.getClientSessionId());
+        genericLoggerRepository.save(salaryUpdateLog);
 
         return instructorMapper.mapFromVisitingResearcherToVisitingResearcherDTO(instructorRepository.save(visitingResearcher));
 
